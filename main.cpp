@@ -7,12 +7,22 @@
 #include "Camera.h"
 #include "Vec3.h"
 
+Vec3 random_in_unit_sphere() {
+    Vec3 p;
+
+    do {
+        p = 2.0*Vec3(drand48(), drand48(), drand48()) - Vec3(1,1,1);
+    } while (p.squared_length() >= 1.0);
+    return p;
+}
+
 Vec3 colour(const Ray& r, Hittable *world) {
 
     hit_record rec;
 
-    if(world->hit(r, 0.0, MAXFLOAT, rec)){
-        return 0.5*Vec3(rec.normal.x() + 1, rec.normal.y() + 1, rec.normal.z() +1);
+    if(world->hit(r, 0.001, MAXFLOAT, rec)){
+        Vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5*colour(Ray(rec.p, target - rec.p), world);
     }
     else{
         Vec3 unit_direction = unit_vector(r.direction());
@@ -37,7 +47,7 @@ int main() {
     // Vec3 lower_left_corner(-2.0, -1.0, -1.0);
     // Vec3 horizontal(4.0, 0.0, 0.0);
     // Vec3 vertical(0.0, 2.0, 0.0);
-    // Vec3 origin(0.0, 0.0, 0.0);
+    // Vec3 origin(0.0, 0.0, 0.0); 
 
     Hittable *list[2];
     list[0] = new Sphere(Vec3(0,0,-1), 0.5);
@@ -58,6 +68,7 @@ int main() {
             }
 
             col /= float(ns);
+            col = Vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
             int ir = int(255.99*col[0]);
             int ig = int(255.99*col[1]);
             int ib = int(255.99*col[2]);
